@@ -1,0 +1,47 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  role      String   @default("USER") // USER or ADMIN
+  scans     Scan[]
+  createdAt DateTime @default(now())
+}
+
+model Scan {
+  id               String       @id @default(cuid())
+  userId           String
+  user             User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  text             String
+  wordCount        Int
+  similarityScore  Float        @default(0.0)
+  originalityScore Float        @default(100.0)
+  matches          ScanMatch[]
+  createdAt        DateTime     @default(now())
+}
+
+model SourceDocument {
+  id          String       @id @default(cuid())
+  name        String
+  text        String
+  matches     ScanMatch[]
+  uploadedAt  DateTime     @default(now())
+}
+
+model ScanMatch {
+  id               String         @id @default(cuid())
+  scanId           String
+  scan             Scan           @relation(fields: [scanId], references: [id], onDelete: Cascade)
+  sourceDocumentId String
+  sourceDocument   SourceDocument @relation(fields: [sourceDocumentId], references: [id], onDelete: Cascade)
+  matchPercentage  Float
+  matchRanges      String         // Stored as stringified JSON since SQLite doesn't have native Json
+}
