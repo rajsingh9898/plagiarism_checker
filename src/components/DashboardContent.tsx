@@ -98,17 +98,19 @@ export function DashboardContent({ email, role, stats, recentScans }: DashboardP
             {/* Quick Actions */}
             <motion.div variants={containerVariants} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {actions.map((action, i) => (
-                    <motion.Link key={i} href={action.href} variants={itemVariants}
-                        className={`group flex items-center gap-5 p-6 rounded-2xl ${action.bgMain} border ${action.borderMain} ${action.hoverBg} transition-colors`}
-                    >
-                        <div className={`w-12 h-12 rounded-xl ${action.bgIcon} flex items-center justify-center ${action.textIcon} shadow-sm shrink-0`}>
-                            <action.icon className="w-6 h-6" />
-                        </div>
-                        <div>
-                            <p className={`font-bold text-slate-800 ${action.textHoverTitle} transition-colors`}>{action.label}</p>
-                            <p className="text-sm text-slate-500 mt-0.5">{action.desc}</p>
-                        </div>
-                    </motion.Link>
+                    <motion.div key={i} variants={itemVariants}>
+                        <Link href={action.href}
+                            className={`group flex items-center gap-5 p-6 rounded-2xl ${action.bgMain} border ${action.borderMain} ${action.hoverBg} transition-colors h-full`}
+                        >
+                            <div className={`w-12 h-12 rounded-xl ${action.bgIcon} flex items-center justify-center ${action.textIcon} shadow-sm shrink-0`}>
+                                <action.icon className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <p className={`font-bold text-slate-800 ${action.textHoverTitle} transition-colors`}>{action.label}</p>
+                                <p className="text-sm text-slate-500 mt-0.5">{action.desc}</p>
+                            </div>
+                        </Link>
+                    </motion.div>
                 ))}
             </motion.div>
 
@@ -144,7 +146,7 @@ export function DashboardContent({ email, role, stats, recentScans }: DashboardP
                                     </div>
                                     <div>
                                         <p className="font-medium text-slate-900">{scan.wordCount.toLocaleString()} words</p>
-                                        <p className="text-xs text-slate-500">{new Date(scan.createdAt).toLocaleDateString()} at {new Date(scan.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+                                        <p className="text-xs text-slate-500" suppressHydrationWarning>{new Date(scan.createdAt).toLocaleDateString()} at {new Date(scan.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-4">

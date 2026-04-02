@@ -8,12 +8,33 @@ datasource db {
 }
 
 model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String?
+  password     String
+  role         String    @default("USER") // USER or ADMIN
+  scans        Scan[]
+  createdAt    DateTime  @default(now())
+}
+
+model PasswordResetToken {
   id        String   @id @default(cuid())
-  email     String   @unique
-  password  String
-  role      String   @default("USER") // USER or ADMIN
-  scans     Scan[]
+  email     String
+  token     String   @unique
+  expiresAt DateTime
   createdAt DateTime @default(now())
+
+  @@index([email])
+}
+
+model EmailOTP {
+  id        String   @id @default(cuid())
+  email     String
+  otp       String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([email])
 }
 
 model Scan {

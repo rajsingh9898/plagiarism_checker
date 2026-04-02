@@ -68,6 +68,11 @@ export default function LoginPage() {
                 className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition"
                 placeholder="••••••••" />
             </div>
+            <div className="flex justify-end">
+              <Link href="/auth/forgot-password" className="text-sm text-amber-400 hover:text-amber-300 font-medium transition">
+                Forgot password?
+              </Link>
+            </div>
             <button type="submit" disabled={loading}
               className="w-full py-3.5 font-bold rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 text-white hover:from-emerald-400 hover:to-cyan-400 transition shadow-lg shadow-emerald-500/20 disabled:opacity-50">
               {loading ? "Signing in…" : "Sign In"}
