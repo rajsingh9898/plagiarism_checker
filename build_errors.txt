@@ -1,0 +1,55 @@
+﻿  Γû▓ Next.js 14.2.35
+  - Environments: .env
+
+   Creating an optimized production build ...
+ Γ£ô Compiled successfully
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/28) ...
+   Generating static pages (7/28) 
+   Generating static pages (14/28) 
+   Generating static pages (21/28) 
+ Γ£ô Generating static pages (28/28)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                              Size     First Load JS
+Γöî ╞Æ /                                    2.82 kB         139 kB
+Γö£ Γùï /_not-found                          873 B          88.1 kB
+Γö£ ╞Æ /admin                               1.75 kB          94 kB
+Γö£ ╞Æ /api/auth/[...nextauth]              0 B                0 B
+Γö£ ╞Æ /api/auth/forgot-password            0 B                0 B
+Γö£ ╞Æ /api/auth/reset-password             0 B                0 B
+Γö£ ╞Æ /api/auth/send-otp                   0 B                0 B
+Γö£ ╞Æ /api/auth/signup                     0 B                0 B
+Γö£ ╞Æ /api/check                           0 B                0 B
+Γö£ ╞Æ /api/coach                           0 B                0 B
+Γö£ ╞Æ /api/fingerprint                     0 B                0 B
+Γö£ ╞Æ /api/scans                           0 B                0 B
+Γö£ ╞Æ /api/upload                          0 B                0 B
+Γö£ ╞Æ /api/users                           0 B                0 B
+Γö£ ╞Æ /app                                 3.03 kB         139 kB
+Γö£ ╞Æ /app/batch                           2.95 kB        95.3 kB
+Γö£ ╞Æ /app/check                           8.2 kB          100 kB
+Γö£ ╞Æ /app/coach                           4.18 kB         105 kB
+Γö£ ╞Æ /app/fingerprint                     3.88 kB        96.2 kB
+Γö£ ╞Æ /app/history                         175 B          96.1 kB
+Γö£ ╞Æ /app/history/[id]                    364 B          96.3 kB
+Γö£ ╞Æ /app/live                            3.07 kB        95.4 kB
+Γö£ ╞Æ /app/policies                        2.75 kB          95 kB
+Γö£ ╞Æ /app/settings                        2 kB           94.3 kB
+Γö£ Γùï /auth/forgot-password                1.78 kB         103 kB
+Γö£ Γùï /auth/login                          1.6 kB          112 kB
+Γö£ Γùï /auth/reset-password                 2.11 kB         103 kB
+Γöö Γùï /auth/signup                         3.27 kB         104 kB
++ First Load JS shared by all            87.3 kB
+  Γö£ chunks/117-0566aa6951ba4135.js       31.7 kB
+  Γö£ chunks/fd9d1056-e8dd6fc930770e76.js  53.6 kB
+  Γöö other shared chunks (total)          1.89 kB
+
+
+╞Æ Middleware                             49.5 kB
+
+Γùï  (Static)   prerendered as static content
+╞Æ  (Dynamic)  server-rendered on demand
+

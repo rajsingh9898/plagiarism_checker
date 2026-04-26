@@ -3,18 +3,19 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
-  id           String    @id @default(cuid())
-  email        String    @unique
-  name         String?
-  password     String
-  role         String    @default("USER") // USER or ADMIN
-  scans        Scan[]
-  createdAt    DateTime  @default(now())
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  password  String
+  role      String   @default("USER")
+  createdAt DateTime @default(now())
+  scans     Scan[]
 }
 
 model PasswordResetToken {
@@ -38,31 +39,31 @@ model EmailOTP {
 }
 
 model Scan {
-  id               String       @id @default(cuid())
+  id               String      @id @default(cuid())
   userId           String
-  user             User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   text             String
   wordCount        Int
-  similarityScore  Float        @default(0.0)
-  originalityScore Float        @default(100.0)
+  similarityScore  Float       @default(0.0)
+  originalityScore Float       @default(100.0)
+  createdAt        DateTime    @default(now())
+  user             User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   matches          ScanMatch[]
-  createdAt        DateTime     @default(now())
 }
 
 model SourceDocument {
-  id          String       @id @default(cuid())
-  name        String
-  text        String
-  matches     ScanMatch[]
-  uploadedAt  DateTime     @default(now())
+  id         String      @id @default(cuid())
+  name       String
+  text       String
+  uploadedAt DateTime    @default(now())
+  matches    ScanMatch[]
 }
 
 model ScanMatch {
   id               String         @id @default(cuid())
   scanId           String
-  scan             Scan           @relation(fields: [scanId], references: [id], onDelete: Cascade)
   sourceDocumentId String
-  sourceDocument   SourceDocument @relation(fields: [sourceDocumentId], references: [id], onDelete: Cascade)
   matchPercentage  Float
-  matchRanges      String         // Stored as stringified JSON since SQLite doesn't have native Json
+  matchRanges      String
+  scan             Scan           @relation(fields: [scanId], references: [id], onDelete: Cascade)
+  sourceDocument   SourceDocument @relation(fields: [sourceDocumentId], references: [id], onDelete: Cascade)
 }

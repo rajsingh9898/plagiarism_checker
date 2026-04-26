@@ -51,7 +51,22 @@ interface ReportWorkspaceProps {
     sentenceCount: number;
     avgSentenceLength: number;
     vocabularyRichness: number;
+    // Gemini enhanced fields
+    geminiVerdict?: string;
+    geminiConfidence?: number;
+    geminiReasoning?: string;
+    aiSignals?: string[];
+    humanSignals?: string[];
+    keyFindings?: string[];
+    analysisMethod?: string;
   };
+  paraphraseAnalysis?: {
+    paraphrasingDetected: boolean;
+    paraphrasingScore: number;
+    suspiciousSegments: { text: string; reason: string; severity: string }[];
+    overallVerdict: string;
+    suggestedActions: string[];
+  } | null;
 }
 
 /* ── Helpers ── */
@@ -153,6 +168,7 @@ export default function ReportWorkspace({
   commonPhrasesFound,
   pipelineStages,
   aiDetection,
+  paraphraseAnalysis,
 }: ReportWorkspaceProps) {
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const [rightTab, setRightTab] = useState<"sources" | "rewrite" | "cite" | "ai">("sources");
@@ -628,12 +644,75 @@ export default function ReportWorkspace({
             <div className="space-y-4">
               {aiDetection ? (
                 <>
+                  {/* Verdict Banner */}
                   <div className={`rounded-xl p-4 border text-center ${
                     aiDetection.verdict === "likely_ai" ? "bg-red-50 border-red-200" : aiDetection.verdict === "mixed" ? "bg-amber-50 border-amber-200" : "bg-emerald-50 border-emerald-200"
                   }`}>
                     <p className={`text-xl font-black ${verdictColor(aiDetection.verdict)}`}>{verdictLabel(aiDetection.verdict)}</p>
                     <p className="text-xs text-slate-500 mt-1">{aiDetection.aiProbability}% AI · {aiDetection.humanProbability}% Human</p>
+                    {aiDetection.analysisMethod === "gemini_hybrid" && (
+                      <span className="inline-block mt-1.5 text-[9px] bg-gradient-to-r from-violet-500 to-purple-600 text-white font-bold px-2 py-0.5 rounded-full">
+                        ✨ Gemini Hybrid Analysis
+                      </span>
+                    )}
                   </div>
+
+                  {/* Gemini Reasoning */}
+                  {aiDetection.geminiReasoning && (
+                    <div className="rounded-xl bg-violet-50 border border-violet-100 p-3">
+                      <p className="text-[10px] font-bold text-violet-600 uppercase mb-1">✨ Gemini Analysis</p>
+                      <p className="text-xs text-slate-700 leading-relaxed">{aiDetection.geminiReasoning}</p>
+                      {aiDetection.geminiConfidence !== undefined && (
+                        <p className="text-[10px] text-violet-500 mt-1 font-semibold">{aiDetection.geminiConfidence}% confidence</p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Key Findings */}
+                  {aiDetection.keyFindings && aiDetection.keyFindings.length > 0 && (
+                    <div className="rounded-xl bg-slate-50 border border-slate-100 p-3">
+                      <p className="text-[10px] font-bold text-slate-500 uppercase mb-2">Key Findings</p>
+                      <ul className="space-y-1">
+                        {aiDetection.keyFindings.map((f, i) => (
+                          <li key={i} className="text-xs text-slate-700 flex items-start gap-1.5">
+                            <span className="text-violet-400 shrink-0">•</span>{f}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* AI Signals vs Human Signals */}
+                  {(aiDetection.aiSignals?.length || aiDetection.humanSignals?.length) ? (
+                    <div className="grid grid-cols-1 gap-2">
+                      {aiDetection.aiSignals && aiDetection.aiSignals.length > 0 && (
+                        <div className="rounded-xl bg-red-50 border border-red-100 p-3">
+                          <p className="text-[10px] font-bold text-red-600 uppercase mb-1.5">🤖 AI Signals</p>
+                          <ul className="space-y-1">
+                            {aiDetection.aiSignals.map((s, i) => (
+                              <li key={i} className="text-xs text-red-800 flex items-start gap-1">
+                                <span className="shrink-0">•</span>{s}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      {aiDetection.humanSignals && aiDetection.humanSignals.length > 0 && (
+                        <div className="rounded-xl bg-emerald-50 border border-emerald-100 p-3">
+                          <p className="text-[10px] font-bold text-emerald-600 uppercase mb-1.5">👤 Human Signals</p>
+                          <ul className="space-y-1">
+                            {aiDetection.humanSignals.map((s, i) => (
+                              <li key={i} className="text-xs text-emerald-800 flex items-start gap-1">
+                                <span className="shrink-0">•</span>{s}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  ) : null}
+
+                  {/* Heuristic Metrics */}
                   <div className="grid grid-cols-2 gap-2">
                     <div className="rounded-xl p-3 bg-slate-50 border border-slate-100">
                       <span className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Burstiness</span>
@@ -648,11 +727,42 @@ export default function ReportWorkspace({
                       <div className="w-full bg-slate-200 rounded-full h-1 mt-1.5"><div className="bg-violet-500 h-1 rounded-full" style={{ width: `${aiDetection.perplexity}%` }} /></div>
                     </div>
                   </div>
+
+                  {/* Stats */}
                   <div className="rounded-xl p-3 bg-slate-50 border border-slate-100 space-y-1.5 text-xs">
                     <div className="flex justify-between"><span className="text-slate-500">Sentences</span><span className="font-semibold">{aiDetection.sentenceCount}</span></div>
                     <div className="flex justify-between"><span className="text-slate-500">Avg length</span><span className="font-semibold">{aiDetection.avgSentenceLength} words</span></div>
                     <div className="flex justify-between"><span className="text-slate-500">Vocabulary</span><span className="font-semibold">{(aiDetection.vocabularyRichness * 100).toFixed(1)}%</span></div>
                   </div>
+
+                  {/* Paraphrase Analysis */}
+                  {paraphraseAnalysis && (
+                    <div className={`rounded-xl border p-3 ${
+                      paraphraseAnalysis.paraphrasingDetected ? "bg-orange-50 border-orange-200" : "bg-emerald-50 border-emerald-200"
+                    }`}>
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-[10px] font-bold text-slate-600 uppercase">🔎 Paraphrase Detection</p>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                          paraphraseAnalysis.paraphrasingDetected ? "bg-orange-100 text-orange-700" : "bg-emerald-100 text-emerald-700"
+                        }`}>
+                          {paraphraseAnalysis.paraphrasingScore}% paraphrase risk
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-700 mb-2">{paraphraseAnalysis.overallVerdict}</p>
+                      {paraphraseAnalysis.suspiciousSegments.length > 0 && (
+                        <div className="space-y-1.5">
+                          {paraphraseAnalysis.suspiciousSegments.slice(0, 3).map((seg, i) => (
+                            <div key={i} className="rounded-lg bg-white/70 border border-orange-100 p-2">
+                              <p className="text-[10px] font-bold text-orange-600 uppercase mb-0.5">{seg.severity} risk</p>
+                              <p className="text-xs text-slate-600 italic">"{seg.text.slice(0, 80)}…"</p>
+                              <p className="text-[10px] text-slate-500 mt-0.5">{seg.reason}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   <div className="rounded-lg bg-blue-50 border border-blue-100 p-3">
                     <p className="text-[11px] text-blue-700">
                       <strong>What this doesn&apos;t mean:</strong> AI detection is probabilistic. High scores don&apos;t definitively prove AI use. Formulaic writing, translations, and technical documents may score higher.

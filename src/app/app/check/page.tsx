@@ -36,6 +36,13 @@ type ScanResult = {
   commonPhrasesFound?: string[];
   pipelineStages?: { name: string; status: string; timeMs: number; detail: string }[];
   aiDetection: AiDetection;
+  paraphraseAnalysis?: {
+    paraphrasingDetected: boolean;
+    paraphrasingScore: number;
+    suspiciousSegments: { text: string; reason: string; severity: string }[];
+    overallVerdict: string;
+    suggestedActions: string[];
+  } | null;
 };
 
 export default function CheckPage() {
@@ -98,6 +105,7 @@ export default function CheckPage() {
           commonPhrasesFound={result.commonPhrasesFound}
           pipelineStages={result.pipelineStages}
           aiDetection={result.aiDetection}
+          paraphraseAnalysis={result.paraphraseAnalysis}
         />
       </div>
     );

@@ -5,7 +5,8 @@ import { prisma } from "@/lib/prisma";
 const pdfParse = require("pdf-parse");
 import mammoth from "mammoth";
 import { runPipeline } from "@/lib/pipeline";
-import { detectAiContent } from "@/lib/ai-detector";
+import { detectAiContentWithGemini } from "@/lib/ai-detector";
+import { geminiAnalyzePlagiarism } from "@/lib/gemini";
 
 export async function POST(req: Request) {
     const session = await getServerSession(authOptions);
@@ -49,13 +50,32 @@ export async function POST(req: Request) {
         select: { id: true, name: true, text: true },
     });
 
-    // Run the multi-stage pipeline
+    // Run the multi-stage pipeline (shingling + MinHash)
     const pipelineResult = await runPipeline(rawText, dbSources, {
         ignoreQuotes: true,
         ignoreReferences: true,
         ignoreBoilerplate: true,
         boilerplateTemplates: [],
     });
+
+    // Run Gemini AI Detection + Gemini Plagiarism analysis in parallel
+    const matchedSourceSnippets = pipelineResult.sources.slice(0, 5).map((s) => ({
+        name: s.sourceName,
+        snippet: s.matchRanges[0]?.sourceSnippet || "",
+    }));
+
+    const [aiResult, geminiPlagiarismResult] = await Promise.allSettled([
+        detectAiContentWithGemini(rawText),
+        geminiAnalyzePlagiarism(rawText, matchedSourceSnippets),
+    ]);
+
+    const aiDetection = aiResult.status === "fulfilled"
+        ? aiResult.value
+        : { aiProbability: 50, humanProbability: 50, verdict: "mixed", analysisMethod: "heuristic" };
+
+    const paraphraseAnalysis = geminiPlagiarismResult.status === "fulfilled"
+        ? geminiPlagiarismResult.value
+        : null;
 
     // Save scan to DB
     const scan = await prisma.scan.create({
@@ -74,9 +94,6 @@ export async function POST(req: Request) {
             },
         },
     });
-
-    // AI Detection
-    const aiResult = detectAiContent(rawText);
 
     return NextResponse.json({
         scanId: scan.id,
@@ -98,6 +115,7 @@ export async function POST(req: Request) {
         excludedChars: pipelineResult.excludedChars,
         totalChars: pipelineResult.totalChars,
         pipelineStages: pipelineResult.pipelineStages,
-        aiDetection: aiResult,
+        aiDetection,
+        paraphraseAnalysis,
     });
 }
