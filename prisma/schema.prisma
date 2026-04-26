@@ -9,13 +9,18 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  password  String
-  role      String   @default("USER")
-  createdAt DateTime @default(now())
-  scans     Scan[]
+  id               String          @id @default(cuid())
+  email            String          @unique
+  name             String?
+  password         String
+  role             String          @default("USER")
+  createdAt        DateTime        @default(now())
+  scans            Scan[]
+  scanJobs         ScanJob[]
+  batchScans       BatchScan[]
+  ownedWorkspaces  TeamWorkspace[]
+  teamMemberships  TeamMember[]
+  sharedReports    SharedReport[]
 }
 
 model PasswordResetToken {
@@ -45,17 +50,46 @@ model Scan {
   wordCount        Int
   similarityScore  Float       @default(0.0)
   originalityScore Float       @default(100.0)
+  semanticScore    Float       @default(0.0)
+  citationScore    Float       @default(100.0)
+  writingScore     Float       @default(100.0)
+  status           String      @default("COMPLETED")
+  stage            String      @default("report")
+  progress         Int         @default(100)
+  fingerprint      String?
+  isReused         Boolean     @default(false)
+  analysisJson     String?
+  shareableCode    String?
+  batchId          String?
+  workspaceId      String?
+  assignmentId     String?
   createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
   user             User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   matches          ScanMatch[]
+  jobs             ScanJob[]
+  batch            BatchScan?      @relation(fields: [batchId], references: [id], onDelete: SetNull)
+  workspace        TeamWorkspace?  @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
+  assignment       Assignment?     @relation(fields: [assignmentId], references: [id], onDelete: SetNull)
+  sharedReports    SharedReport[]
+
+  @@index([userId, createdAt])
+  @@index([status, createdAt])
+  @@index([fingerprint])
 }
 
 model SourceDocument {
   id         String      @id @default(cuid())
   name       String
   text       String
+  fingerprint String?
+  language    String?
+  indexVersion Int       @default(1)
   uploadedAt DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
   matches    ScanMatch[]
+
+  @@index([fingerprint])
 }
 
 model ScanMatch {
@@ -66,4 +100,124 @@ model ScanMatch {
   matchRanges      String
   scan             Scan           @relation(fields: [scanId], references: [id], onDelete: Cascade)
   sourceDocument   SourceDocument @relation(fields: [sourceDocumentId], references: [id], onDelete: Cascade)
+}
+
+model ScanJob {
+  id          String         @id @default(cuid())
+  userId      String
+  scanId      String?
+  batchId     String?
+  workspaceId String?
+  status      String         @default("queued")
+  stage       String         @default("upload")
+  progress    Int            @default(0)
+  attempts    Int            @default(0)
+  maxAttempts Int            @default(3)
+  payloadText String
+  fileName    String?
+  fingerprint String?
+  error       String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  startedAt   DateTime?
+  completedAt DateTime?
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  scan        Scan?          @relation(fields: [scanId], references: [id], onDelete: SetNull)
+  batch       BatchScan?     @relation(fields: [batchId], references: [id], onDelete: SetNull)
+  events      ScanJobEvent[]
+
+  @@index([userId, createdAt])
+  @@index([status, updatedAt])
+  @@index([batchId])
+}
+
+model ScanJobEvent {
+  id        String   @id @default(cuid())
+  jobId     String
+  stage     String
+  status    String
+  message   String
+  metricMs  Int?
+  createdAt DateTime @default(now())
+  job       ScanJob  @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([jobId, createdAt])
+  @@index([stage, createdAt])
+}
+
+model BatchScan {
+  id            String    @id @default(cuid())
+  userId        String
+  name          String?
+  status        String    @default("queued")
+  totalJobs     Int
+  completedJobs Int       @default(0)
+  failedJobs    Int       @default(0)
+  summaryJson   String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobs          ScanJob[]
+  scans         Scan[]
+
+  @@index([userId, createdAt])
+}
+
+model TeamWorkspace {
+  id          String       @id @default(cuid())
+  name        String
+  ownerId     String
+  description String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  owner       User         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  members     TeamMember[]
+  assignments Assignment[]
+  scans       Scan[]
+
+  @@index([ownerId, createdAt])
+}
+
+model TeamMember {
+  id          String        @id @default(cuid())
+  workspaceId String
+  userId      String
+  role        String        @default("STUDENT")
+  joinedAt    DateTime      @default(now())
+  workspace   TeamWorkspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, userId])
+  @@index([userId])
+}
+
+model Assignment {
+  id          String        @id @default(cuid())
+  workspaceId String
+  title       String
+  description String?
+  status      String        @default("OPEN")
+  deadline    DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  workspace   TeamWorkspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  scans       Scan[]
+
+  @@index([workspaceId, deadline])
+}
+
+model SharedReport {
+  id          String   @id @default(cuid())
+  token       String   @unique
+  scanId      String
+  createdById String
+  verifyCode  String
+  expiresAt   DateTime?
+  revoked     Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  scan        Scan     @relation(fields: [scanId], references: [id], onDelete: Cascade)
+  createdBy   User     @relation(fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([scanId, createdAt])
+  @@index([token, revoked])
 }

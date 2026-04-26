@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import PrintButton from "@/components/PrintButton";
+import ShareReportButton from "@/components/ShareReportButton";
 
 export default async function ReportPage({ params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
@@ -64,7 +65,10 @@ export default async function ReportPage({ params }: { params: { id: string } })
             {new Date(scan.createdAt).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
           </p>
         </div>
-        <PrintButton />
+        <div className="flex items-center gap-2">
+          <ShareReportButton scanId={scan.id} />
+          <PrintButton />
+        </div>
       </div>
 
       {/* Score Cards */}

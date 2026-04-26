@@ -44,12 +44,18 @@ export default async function HistoryPage() {
                     <p className="text-sm text-slate-800 font-medium truncate group-hover:text-emerald-700 transition">
                       {scan.text.substring(0, 120)}…
                     </p>
-                    <div className="flex items-center gap-4 mt-2 text-xs text-slate-400">
+                    <div className="flex items-center gap-4 mt-2 text-xs text-slate-400 flex-wrap">
                       <span>{scan.wordCount} words</span>
                       <span>•</span>
                       <span>{scan.matches.length} source{scan.matches.length !== 1 ? "s" : ""} matched</span>
                       <span>•</span>
                       <span>{new Date(scan.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
+                      <span>•</span>
+                      <span className="text-violet-500 font-semibold">Semantic {(scan.semanticScore ?? 0).toFixed(0)}%</span>
+                      <span>•</span>
+                      <span className="text-blue-500 font-semibold">Citation {(scan.citationScore ?? 0).toFixed(0)}%</span>
+                      <span>•</span>
+                      <span className="text-emerald-500 font-semibold">Writing {(scan.writingScore ?? 0).toFixed(0)}%</span>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 shrink-0">

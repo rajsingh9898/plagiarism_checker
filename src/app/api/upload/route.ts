@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 const pdfParse = require("pdf-parse");
 import mammoth from "mammoth";
 import { normalizeText } from "@/lib/plagiarism";
+import { upsertSourceFingerprint } from "@/lib/source-index";
 
 export async function POST(req: Request) {
     const session = await getServerSession(authOptions);
@@ -41,9 +42,11 @@ export async function POST(req: Request) {
         const doc = await prisma.sourceDocument.create({
             data: {
                 name: file.name,
-                text: normalized
+                text: normalized,
             }
         });
+
+        await upsertSourceFingerprint(doc.id, normalized);
 
         return NextResponse.json(doc);
     } catch (error: any) {

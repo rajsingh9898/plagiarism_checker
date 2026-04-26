@@ -20,6 +20,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
                     </div>
                     <nav className="flex space-x-4 items-center">
                         <Link href="/app" className="text-gray-500 hover:text-gray-900">Back to App</Link>
+                        <Link href="/admin/observability" className="text-gray-500 hover:text-gray-900">Observability</Link>
                         <div className="w-24">
                             <LogoutButton />
                         </div>

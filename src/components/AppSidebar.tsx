@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Search, PenTool, TrendingUp, Fingerprint, History, Layers, ShieldCheck, Settings, Menu, X, LogOut } from "lucide-react";
+import { LayoutDashboard, Search, PenTool, TrendingUp, Fingerprint, History, Layers, ShieldCheck, Settings, Menu, X, LogOut, Users } from "lucide-react";
 
 export function AppSidebar({ email, role }: { email?: string; role?: string }) {
     const [isOpen, setIsOpen] = useState(false);
@@ -17,6 +17,7 @@ export function AppSidebar({ email, role }: { email?: string; role?: string }) {
         { href: "/app/fingerprint", label: "Fingerprint", icon: Fingerprint },
         { href: "/app/history", label: "History", icon: History },
         { href: "/app/batch", label: "Batch Tools", icon: Layers },
+        { href: "/app/teams", label: "Teams", icon: Users },
         { href: "/app/policies", label: "Policies", icon: ShieldCheck },
         { href: "/app/settings", label: "Settings", icon: Settings },
     ];
