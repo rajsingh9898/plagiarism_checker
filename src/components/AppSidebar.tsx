@@ -3,11 +3,18 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
 import { LayoutDashboard, Search, PenTool, TrendingUp, Fingerprint, History, Layers, ShieldCheck, Settings, Menu, X, LogOut, Users } from "lucide-react";
 
 export function AppSidebar({ email, role }: { email?: string; role?: string }) {
     const [isOpen, setIsOpen] = useState(false);
     const pathname = usePathname();
+
+    const handleLogout = async () => {
+        setIsOpen(false);
+        await signOut({ redirect: false });
+        window.location.href = "/auth/login";
+    };
 
     const navItems = [
         { href: "/app", label: "Dashboard", icon: LayoutDashboard },
@@ -90,10 +97,14 @@ export function AppSidebar({ email, role }: { email?: string; role?: string }) {
                     <p className="text-xs text-slate-400 font-medium truncate px-2" title={email}>
                         {email}
                     </p>
-                    <Link href="/api/auth/signout" className="flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium text-rose-400 hover:bg-rose-500/10 transition border border-transparent hover:border-rose-500/20">
+                    <button
+                        type="button"
+                        onClick={handleLogout}
+                        className="flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium text-rose-400 hover:bg-rose-500/10 transition border border-transparent hover:border-rose-500/20 text-left"
+                    >
                         <LogOut className="w-5 h-5 text-rose-400" />
                         Log out
-                    </Link>
+                    </button>
                 </div>
             </aside>
 
